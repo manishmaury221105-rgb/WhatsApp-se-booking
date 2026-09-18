@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/models/models.dart';
 import '../../../providers/app_providers.dart';
 import '../../../widgets/common_widgets.dart';
 import 'customer_details_screen.dart';

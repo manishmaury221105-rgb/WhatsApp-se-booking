@@ -467,7 +467,7 @@ class _BookingDetailsScreenState extends ConsumerState<BookingDetailsScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: _showRescheduleDialog,
-                      icon: const Icon(Icons.calendar_sync, size: 16),
+                      icon: const Icon(Icons.sync, size: 16),
                       label: const Text('Reschedule'),
                     ),
                   ),

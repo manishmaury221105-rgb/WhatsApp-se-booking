@@ -23,9 +23,9 @@ describe('WhatsApp Booking Backend & Engine Test Suite', () => {
   });
 
   test('SlotEngine should calculate available slots accurately', () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateStr = tomorrow.toISOString().split('T')[0];
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + 10);
+    const dateStr = targetDate.toISOString().split('T')[0];
 
     const slots = SlotEngine.calculateAvailableSlots({
       business_id: businessId,
@@ -41,9 +41,14 @@ describe('WhatsApp Booking Backend & Engine Test Suite', () => {
   });
 
   test('SlotEngine should prevent double-booking atomically', () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 2);
-    const testDate = tomorrow.toISOString().split('T')[0];
+    // Generate unique random test date into the future to ensure clean state
+    const randomOffset = 30 + Math.floor(Math.random() * 50);
+    const testTarget = new Date();
+    testTarget.setDate(testTarget.getDate() + randomOffset);
+    const testDate = testTarget.toISOString().split('T')[0];
+
+    // Clean any previous test bookings on this test date
+    db.prepare('DELETE FROM appointments WHERE business_id = ? AND date = ?').run(businessId, testDate);
 
     // First booking should succeed
     const appt1 = SlotEngine.createBookingTransaction({
@@ -60,7 +65,7 @@ describe('WhatsApp Booking Backend & Engine Test Suite', () => {
     expect(appt1).toBeDefined();
     expect(appt1.booking_id).toBeDefined();
 
-    // Duplicate booking on the same slot & staff MUST throw an error
+    // Duplicate booking on the exact same slot & staff MUST throw an error
     expect(() => {
       SlotEngine.createBookingTransaction({
         business_id: businessId,
@@ -98,6 +103,12 @@ describe('WhatsApp Booking Backend & Engine Test Suite', () => {
   });
 
   test('POST /api/ai/chat-simulate interactive AI booking agent test', async () => {
+    // Reset any existing simulated session first
+    await request(app)
+      .post('/api/ai/chat-simulate/reset')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ customer_phone: '+919888877777' });
+
     // 1. Initial Greeting
     const res1 = await request(app)
       .post('/api/ai/chat-simulate')

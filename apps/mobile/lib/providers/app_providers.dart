@@ -296,11 +296,14 @@ class BookingsNotifier extends StateNotifier<BookingsState> {
 
   Future<bool> rescheduleBooking(String id, String newDate, String newStartTime, {String? staffId}) async {
     try {
-      await ApiClient.dio.post('/bookings/$id/reschedule', data: {
+      final data = <String, dynamic>{
         'new_date': newDate,
         'new_start_time': newStartTime,
-        if (staffId != null) 'new_staff_id': staffId,
-      });
+      };
+      if (staffId != null) {
+        data['new_staff_id'] = staffId;
+      }
+      await ApiClient.dio.post('/bookings/$id/reschedule', data: data);
       fetchBookings();
       return true;
     } catch (e) {
@@ -562,6 +565,8 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
     try {
       await ApiClient.dio.post('/notifications/read-all');
       fetchNotifications();
-    } catch (e) {}
+    } catch (_) {
+      // Ignored
+    }
   }
 }

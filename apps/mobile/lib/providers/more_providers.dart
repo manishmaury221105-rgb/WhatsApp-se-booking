@@ -187,7 +187,9 @@ class WhatsAppNotifier extends StateNotifier<WhatsAppState> {
       if (res.data['success'] == true) {
         state = state.copyWith(messages: res.data['messages'] ?? []);
       }
-    } catch (e) {}
+    } catch (_) {
+      // Ignored
+    }
   }
 
   Future<bool> updateConfig(Map<String, dynamic> data) async {
@@ -408,11 +410,12 @@ class AutomationsNotifier extends StateNotifier<AutomationsState> {
 
   Future<bool> updateRule(String id, {bool? isEnabled, String? templateId, int? delayMinutes}) async {
     try {
-      await ApiClient.dio.put('/automations/$id', data: {
-        if (isEnabled != null) 'is_enabled': isEnabled,
-        if (templateId != null) 'template_id': templateId,
-        if (delayMinutes != null) 'delay_minutes': delayMinutes,
-      });
+      final payload = <String, dynamic>{};
+      if (isEnabled != null) payload['is_enabled'] = isEnabled;
+      if (templateId != null) payload['template_id'] = templateId;
+      if (delayMinutes != null) payload['delay_minutes'] = delayMinutes;
+
+      await ApiClient.dio.put('/automations/$id', data: payload);
       loadAll();
       return true;
     } catch (e) {
